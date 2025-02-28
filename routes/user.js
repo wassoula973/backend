@@ -6,7 +6,7 @@ const { isConnected } = require("../middlewares");
 const Station = require("../models/station");
 
 const userRouter = Router();
-//127.0.0.1:2700/users
+
 userRouter.get("/", [isConnected], async (request, response) => {
   const users = await User.find({ deleted: false }).populate("station");
   response.send(users);
