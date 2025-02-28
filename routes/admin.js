@@ -9,7 +9,7 @@ adminRouter.get("/users", [isConnected], async (request, response) => {
   response.send(users);
 });
 
-adminRouter.get("/:id", [isConnected], async (request, response) => {
+adminRouter.get("/:id marwa", [isConnected], async (request, response) => {
   const user = await User.findById(request.params.id);
   if (user) {
     response.send(user);
