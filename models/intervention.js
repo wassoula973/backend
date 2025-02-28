@@ -1,0 +1,22 @@
+const { Schema, model, Types } = require("mongoose");
+const User = require("./user");
+const Station = require("./station");
+
+const interventionSchema = new Schema({
+  etat: {
+    type: String,
+    enum: ["pending", "affected", "done", "canceled"],
+    required: true,
+    default: "pending",
+  },
+  date: { type: Date, default: Date.now() },
+  gerant: { type: Types.ObjectId, ref: User },
+  station: { type: Types.ObjectId, ref: Station },
+  technicien: { type: Types.ObjectId, ref: User },
+  image: String,
+  deleted: { type: Boolean, default: false },
+});
+
+const Intervention = model("interventions", interventionSchema);
+
+module.exports = Intervention;
