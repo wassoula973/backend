@@ -7,9 +7,10 @@ const userSchema = new Schema({
   cin: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  phone: String,
   role: {
     type: String,
-    enum: ["technicien", "admin", "gerant"],
+    enum: ["technicien", "admin", "gerant", "assistant"],
     required: true,
   },
   listInterventions: { type: Array || undefined, default: undefined },

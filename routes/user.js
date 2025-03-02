@@ -37,7 +37,8 @@ userRouter.post("/login", async (request, response) => {
 
 //register
 userRouter.post("/", (request, response) => {
-  const { firstname, lastname, cin, email, password, role } = request.body;
+  const { firstname, lastname, cin, email, password, role, phone } =
+    request.body;
   const hash = bcrypt.hashSync(password, 10);
   const user = new User({
     firstname,
@@ -46,6 +47,7 @@ userRouter.post("/", (request, response) => {
     email,
     password: hash,
     role,
+    phone,
   });
   user
     .save()
@@ -54,7 +56,7 @@ userRouter.post("/", (request, response) => {
       response.send({ user: savedUser, token });
     })
     .catch((error) => {
-      response.status(500).send({ test: "drfgsdfgfdsgfsdg", error });
+      response.status(500).send(error);
     });
 });
 
@@ -66,6 +68,7 @@ userRouter.put("/", [isConnected], async (request, response) => {
     cin,
     email,
     password,
+    phone,
     role,
     listInterventions,
     listeQueries,
@@ -80,6 +83,7 @@ userRouter.put("/", [isConnected], async (request, response) => {
     user.cin = cin ? cin : user.cin;
     user.email = email ? email : user.email;
     user.password = password ? hash : user.password;
+    user.password = phone ? phone : user.phone;
     user.role = role ? role : user.role;
     user.station = station ? station : user.station;
     user.listInterventions = listInterventions
