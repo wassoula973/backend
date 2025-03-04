@@ -17,11 +17,13 @@ interventionRouter.get("/:id", [isConnected], async (request, response) => {
 });
 
 interventionRouter.post("/", [isConnected], (request, response) => {
-  const { gerant, station } = request.body;
+  const { gerant, station, error, intensity } = request.body;
 
   const intervention = new Intervention({
     gerant,
     station,
+    error,
+    intensity,
   });
   intervention
     .save()
@@ -34,11 +36,12 @@ interventionRouter.post("/", [isConnected], (request, response) => {
 });
 
 interventionRouter.put("/:id", [isConnected], async (request, response) => {
-  const { etat, technicien } = request.body;
+  const { etat, technicien, intensity } = request.body;
   const intervention = await Intervention.findById(request.params.id);
   if (intervention) {
     intervention.etat = etat ? etat : intervention.etat;
     intervention.technicien = technicien ? technicien : intervention.technicien;
+    intervention.intensity = intensity ? intensity : intervention.intensity;
     intervention
       .save()
       .then((savedIntervention) => {

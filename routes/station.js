@@ -18,6 +18,15 @@ stationRouter.get("/:id", [isConnected], async (request, response) => {
   } else response.status(404).send("not found");
 });
 
+stationRouter.post("/getbyassistant", [], async (request, response) => {
+  const { gouvernorats } = request.body; // ["ben arous","tunis"]
+  const stations = await Station.find({
+    deleted: false,
+    gouvernorat: { $in: gouvernorats },
+  }).populate("gerant");
+  response.send(stations);
+});
+
 stationRouter.post("/", [isConnected], (request, response) => {
   const { adresse, listmateriel, gerant } = request.body;
   const station = new Station({

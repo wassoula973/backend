@@ -28,8 +28,9 @@ userRouter.post("/login", async (request, response) => {
       if (user.deleted) {
         response.status(406).send("user deleted");
       } else {
-        const token = jwt.sign({ user }, process.env.token_key);
-        response.send({ user, token });
+        const userPopulated = await user.populate("station");
+        const token = jwt.sign({ user: userPopulated }, process.env.token_key);
+        response.send({ user: userPopulated, token });
       }
     } else response.status(405).send("password doesn't match");
   } else response.status(404).send("not found");
@@ -52,8 +53,9 @@ userRouter.post("/", (request, response) => {
   user
     .save()
     .then(async (savedUser) => {
-      const token = jwt.sign({ user: savedUser }, process.env.token_key);
-      response.send({ user: savedUser, token });
+      const userPopulated = await user.populate("station");
+      const token = jwt.sign({ user: userPopulated }, process.env.token_key);
+      response.send({ user: userPopulated, token });
     })
     .catch((error) => {
       response.status(500).send(error);
@@ -70,6 +72,7 @@ userRouter.put("/", [isConnected], async (request, response) => {
     password,
     phone,
     role,
+    gouvernorats,
     listInterventions,
     listeQueries,
     station,
@@ -83,8 +86,9 @@ userRouter.put("/", [isConnected], async (request, response) => {
     user.cin = cin ? cin : user.cin;
     user.email = email ? email : user.email;
     user.password = password ? hash : user.password;
-    user.password = phone ? phone : user.phone;
+    user.phone = phone ? phone : user.phone;
     user.role = role ? role : user.role;
+    user.gouvernorats = gouvernorats ? gouvernorats : user.gouvernorats;
     user.station = station ? station : user.station;
     user.listInterventions = listInterventions
       ? listInterventions

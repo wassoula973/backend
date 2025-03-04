@@ -12,8 +12,14 @@ const interventionSchema = new Schema({
   date: { type: Date, default: Date.now() },
   gerant: { type: Types.ObjectId, ref: User },
   station: { type: Types.ObjectId, ref: Station },
-  technicien: { type: Types.ObjectId, ref: User },
+  technicien: {
+    type: Types.ObjectId || undefined,
+    ref: User,
+    default: undefined,
+  },
   image: String,
+  error: { type: String, required: true },
+  intensity: { type: String, enum: ["danger", "warning", "normal"] },
   deleted: { type: Boolean, default: false },
 });
 
