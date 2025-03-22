@@ -57,10 +57,14 @@ interventionRouter.get(
   [isConnected],
   async (request, response) => {
     const user = await User.findById(request.params.id);
-    const interventions = await Intervention.find({
-      "station.gouvernorat": "Tunis",
-    }).populate(["gerant", "station"]);
-    response.send(interventions);
+    const interventions = await Intervention.find({ deleted: false }).populate([
+      "gerant",
+      "station",
+    ]);
+    const filtredInterventions = interventions.filter((i) => {
+      return user.gouvernorats.includes(i.station.gouvernorat);
+    });
+    response.send(filtredInterventions);
   }
 );
 
@@ -68,13 +72,14 @@ interventionRouter.post(
   "/",
   [isConnected, upload.single("image")],
   (request, response) => {
-    const { gerant, station, error, intensity } = request.body;
+    const { gerant, station, error, intensity, category } = request.body;
     const imageName = request.file ? request.file.filename : "";
     const intervention = new Intervention({
       gerant,
       station,
       error,
       intensity,
+      category,
       image: imageName,
     });
     intervention
@@ -100,16 +105,46 @@ interventionRouter.post(
 );
 
 interventionRouter.put("/:id", [isConnected], async (request, response) => {
-  const { etat, technicien, intensity } = request.body;
+  const { etat, technicien, intensity, category } = request.body;
   const intervention = await Intervention.findById(request.params.id);
   if (intervention) {
     intervention.etat = etat ? etat : intervention.etat;
     intervention.technicien = technicien ? technicien : intervention.technicien;
     intervention.intensity = intensity ? intensity : intervention.intensity;
+    intervention.category = category ? category : intervention.category;
     intervention
       .save()
-      .then((savedIntervention) => {
-        response.send(savedIntervention);
+      .then(async (savedIntervention) => {
+        if (technicien) {
+          const user = await User.findById(technicien);
+          if (user) {
+            const populated = await savedIntervention.populate([
+              "gerant",
+              "station",
+            ]);
+            console.log(populated);
+
+            const contenu = {
+              from: process.env.nodemailer_email,
+              to: user.email,
+              subject:
+                "Affectation to intervention id:" + savedIntervention._id,
+              html: `You're affected to intervention with id : ${
+                populated._id
+              } to station in ${populated.station.gouvernorat} . Gerant : ${
+                populated.gerant.firstname
+              } ${populated.gerant.lastname}  ${
+                populated.gerant.phone
+                  ? "phone number : " + populated.gerant.phone
+                  : ""
+              }`,
+            };
+            transport.sendMail(contenu, (error, mail) => {
+              console.log({ error, mail });
+              response.send(savedIntervention);
+            });
+          } else response.status(404).send("not found");
+        } else response.send(savedIntervention);
       })
       .catch((error) => {
         response.status(500).send(error);

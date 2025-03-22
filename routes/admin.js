@@ -1,21 +1,67 @@
 const { Router } = require("express");
-const { User } = require("../models/user");
+const User = require("../models/user");
 const { isConnected } = require("../middlewares");
 
 const adminRouter = Router();
 
 adminRouter.get("/users", [isConnected], async (request, response) => {
-  const users = await User.find();
+  const users = await User.find().populate(["station"]);
   response.send(users);
 });
 
-adminRouter.get("/:id", [isConnected], async (request, response) => {
+adminRouter.get("/user/:id", [isConnected], async (request, response) => {
   const user = await User.findById(request.params.id);
-  console.log("trah 9olli weslek changement ou nn ");
 
   if (user) {
     response.send(user);
   } else response.status(404).send("not found");
 });
+
+adminRouter.patch("/user/:id", [isConnected], async (request, response) => {
+  const user = await User.findById(request.params.id);
+  if (user) {
+    user.deleted = false;
+    user
+      .save()
+      .then((savedUser) => {
+        response.send(savedUser);
+      })
+      .catch((error) => response.status(500).send(error));
+  } else response.status(404).send("not found");
+});
+
+adminRouter.delete(
+  "/users/multiple",
+  [isConnected],
+  async (request, response) => {
+    const listId = request.body.listId;
+    const users = await User.find({ _id: { $in: listId } });
+    users.map((u) => {
+      u.deleted = true;
+      u.save()
+        .then(() => {})
+        .catch((error) => {});
+    });
+
+    response.send(users);
+  }
+);
+
+adminRouter.patch(
+  "/users/multiple",
+  [isConnected],
+  async (request, response) => {
+    const listId = request.body.listId;
+    const users = await User.find({ _id: { $in: listId } });
+    users.map((u) => {
+      u.deleted = false;
+      u.save()
+        .then(() => {})
+        .catch((error) => {});
+    });
+
+    response.send(users);
+  }
+);
 
 module.exports = adminRouter;

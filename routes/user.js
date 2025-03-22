@@ -19,6 +19,11 @@ userRouter.get("/:id", [isConnected], async (request, response) => {
   } else response.status(404).send("not found");
 });
 
+userRouter.get("/role/:role", [isConnected], async (request, response) => {
+  const users = await User.find({ role: request.params.role });
+  response.send(users);
+});
+
 //login
 userRouter.post("/login", async (request, response) => {
   const { email, password } = request.body;
@@ -78,7 +83,7 @@ userRouter.put("/", [isConnected], async (request, response) => {
     station,
   } = request.body;
 
-  const hash = bcrypt.hashSync(password, 10);
+  const hash = password ? bcrypt.hashSync(password, 10) : "";
   const user = await User.findById(id);
   if (user) {
     user.firstname = firstname ? firstname : user.firstname;
@@ -88,12 +93,30 @@ userRouter.put("/", [isConnected], async (request, response) => {
     user.password = password ? hash : user.password;
     user.phone = phone ? phone : user.phone;
     user.role = role ? role : user.role;
-    user.gouvernorats = gouvernorats ? gouvernorats : user.gouvernorats;
-    user.station = station ? station : user.station;
-    user.listInterventions = listInterventions
-      ? listInterventions
-      : user.listInterventions;
-    user.listeQueries = listeQueries ? listeQueries : user.listeQueries;
+    user.gouvernorats =
+      role == "assistant" || user.role == "assistant"
+        ? gouvernorats
+          ? gouvernorats
+          : user.gouvernorats
+        : undefined;
+    user.station =
+      role == "gerant" || user.role == "gerant"
+        ? station
+          ? station
+          : user.station
+        : undefined;
+    user.listInterventions =
+      role == "technicien" || user.role == "technicien"
+        ? listInterventions
+          ? listInterventions
+          : user.listInterventions
+        : undefined;
+    user.listeQueries =
+      role == "gerant" || user.role == "gerant"
+        ? listeQueries
+          ? listeQueries
+          : user.listeQueries
+        : undefined;
 
     user
       .save()
