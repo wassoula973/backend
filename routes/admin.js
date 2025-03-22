@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const User = require("../models/user");
 const { isConnected } = require("../middlewares");
+const Station = require("../models/station");
 
 const adminRouter = Router();
 
@@ -63,5 +64,10 @@ adminRouter.patch(
     response.send(users);
   }
 );
+
+adminRouter.get("/stations", [isConnected], async (request, response) => {
+  const stations = await Station.find().populate("gerant");
+  response.send(stations);
+});
 
 module.exports = adminRouter;

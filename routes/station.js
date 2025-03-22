@@ -12,7 +12,7 @@ stationRouter.get("/", [isConnected], async (request, response) => {
 });
 
 stationRouter.get("/:id", [isConnected], async (request, response) => {
-  const station = await Station.findById(request.params.id);
+  const station = await Station.findById(request.params.id).populate("gerant");
   if (station) {
     response.send(station);
   } else response.status(404).send("not found");
