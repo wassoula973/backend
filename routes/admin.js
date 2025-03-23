@@ -70,4 +70,18 @@ adminRouter.get("/stations", [isConnected], async (request, response) => {
   response.send(stations);
 });
 
+// restore single
+adminRouter.patch("/station/:id", [isConnected], async (request, response) => {
+  const station = await Station.findById(request.params.id);
+  if (station) {
+    station.deleted = false;
+    station
+      .save()
+      .then((savedStation) => {
+        response.send(savedStation);
+      })
+      .catch((error) => response.status(500).send(error));
+  } else response.status(404).send("not found");
+});
+
 module.exports = adminRouter;
