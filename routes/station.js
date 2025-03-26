@@ -64,8 +64,21 @@ stationRouter.put("/:id", [isConnected], async (request, response) => {
     station.gerant = gerant ? gerant : station.gerant;
     station
       .save()
-      .then((savedStation) => {
-        response.send(savedStation);
+      .then(async (savedStation) => {
+        if (gerant) {
+          const user = await User.findById(gerant);
+          if (user) {
+            user.station = savedStation._id;
+            user
+              .save()
+              .then((savedUser) => {
+                response.send({ station: savedStation, user: savedUser });
+              })
+              .catch((error) => {
+                response.status(500).send(error);
+              });
+          }
+        } else response.send(savedStation);
       })
       .catch((error) => {
         response.status(500).send(error);

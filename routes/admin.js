@@ -2,11 +2,17 @@ const { Router } = require("express");
 const User = require("../models/user");
 const { isConnected } = require("../middlewares");
 const Station = require("../models/station");
+const Intervention = require("../models/intervention");
 
 const adminRouter = Router();
 
 adminRouter.get("/users", [isConnected], async (request, response) => {
   const users = await User.find().populate(["station"]);
+  response.send(users);
+});
+
+adminRouter.get("/users/gerants", [isConnected], async (request, response) => {
+  const users = await User.find({ role: "gerant" }).populate(["station"]);
   response.send(users);
 });
 
@@ -84,4 +90,11 @@ adminRouter.patch("/station/:id", [isConnected], async (request, response) => {
   } else response.status(404).send("not found");
 });
 
+adminRouter.get("/interventions", [isConnected], async (request, response) => {
+  const interventions = await Intervention.find().populate([
+    "gerant",
+    "station",
+  ]);
+  response.send(interventions);
+});
 module.exports = adminRouter;
