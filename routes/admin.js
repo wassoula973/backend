@@ -1,4 +1,4 @@
-const { Router } = require("express");
+const { Router, request } = require("express");
 const User = require("../models/user");
 const { isConnected } = require("../middlewares");
 const Station = require("../models/station");
@@ -97,4 +97,23 @@ adminRouter.get("/interventions", [isConnected], async (request, response) => {
   ]);
   response.send(interventions);
 });
+
+adminRouter.patch(
+  "/intervention/:id",
+  [isConnected],
+  async (request, response) => {
+    const intervention = await Intervention.findById(request.params.id);
+    if (intervention) {
+      intervention.deleted = false;
+      intervention
+        .save()
+        .then((savedIntervention) => {
+          response.send(savedIntervention);
+        })
+        .catch((error) => {
+          response.status(500).send(error);
+        });
+    } else response.status(404).send("not found");
+  }
+);
 module.exports = adminRouter;
