@@ -35,6 +35,7 @@ interventionRouter.get("/:id", [isConnected], async (request, response) => {
   const intervention = await Intervention.findById(request.params.id).populate([
     "gerant",
     "station",
+    "technicien",
   ]);
   if (intervention) {
     response.send(intervention);
