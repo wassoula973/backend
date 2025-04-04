@@ -76,6 +76,37 @@ adminRouter.get("/stations", [isConnected], async (request, response) => {
   response.send(stations);
 });
 
+adminRouter.patch(
+  "/stations/multiple",
+  [isConnected],
+  async (request, response) => {
+    const listId = request.body.listId;
+    const stations = await Station.find({ _id: { $in: listId } });
+    stations.map((u) => {
+      u.deleted = false;
+      u.save()
+        .then(() => {})
+        .catch((error) => {});
+    });
+    response.send(stations);
+  }
+);
+
+adminRouter.delete(
+  "/stations/multiple",
+  [isConnected],
+  async (request, response) => {
+    const listId = request.body.listId;
+    const stations = await Station.find({ _id: { $in: listId } });
+    stations.map((u) => {
+      u.deleted = true;
+      u.save()
+        .then(() => {})
+        .catch((error) => {});
+    });
+    response.send(stations);
+  }
+);
 // restore single
 adminRouter.patch("/station/:id", [isConnected], async (request, response) => {
   const station = await Station.findById(request.params.id);
@@ -99,6 +130,39 @@ adminRouter.get("/interventions", [isConnected], async (request, response) => {
 });
 
 adminRouter.patch(
+  "/interventions/multiple",
+  [isConnected],
+  async (request, response) => {
+    const listId = request.body.listId;
+    const interventions = await Intervention.find({ _id: { $in: listId } });
+    interventions.map((u) => {
+      u.deleted = false;
+      u.save()
+        .then(() => {})
+        .catch((error) => {});
+    });
+
+    response.send(interventions);
+  }
+);
+
+adminRouter.delete(
+  "/interventions/multiple",
+  [isConnected],
+  async (request, response) => {
+    const listId = request.body.listId;
+    const interventions = await Intervention.find({ _id: { $in: listId } });
+    interventions.map((u) => {
+      u.deleted = true;
+      u.save()
+        .then(() => {})
+        .catch((error) => {});
+    });
+    response.send(interventions);
+  }
+);
+
+adminRouter.patch(
   "/intervention/:id",
   [isConnected],
   async (request, response) => {
@@ -116,4 +180,5 @@ adminRouter.patch(
     } else response.status(404).send("not found");
   }
 );
+
 module.exports = adminRouter;

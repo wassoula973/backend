@@ -48,7 +48,7 @@ interventionRouter.get(
   async (request, response) => {
     const interventions = await Intervention.find({
       gerant: request.params.id,
-    });
+    }).populate(["gerant", "station", "technicien"]);
     response.send(interventions);
   }
 );
@@ -61,6 +61,7 @@ interventionRouter.get(
     const interventions = await Intervention.find({ deleted: false }).populate([
       "gerant",
       "station",
+      "technicien",
     ]);
     const filtredInterventions = interventions.filter((i) => {
       return user.gouvernorats.includes(i.station.gouvernorat);

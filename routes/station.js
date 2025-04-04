@@ -1,5 +1,5 @@
 const { Router } = require("express");
-
+const jwt = require("jsonwebtoken");
 const Station = require("../models/station");
 const User = require("../models/user");
 const { isConnected } = require("../middlewares");
@@ -66,13 +66,23 @@ stationRouter.put("/:id", [isConnected], async (request, response) => {
       .save()
       .then(async (savedStation) => {
         if (gerant) {
-          const user = await User.findById(gerant);
+          const user = await User.findById(gerant).populate(["station"]);
           if (user) {
             user.station = savedStation._id;
             user
               .save()
-              .then((savedUser) => {
-                response.send({ station: savedStation, user: savedUser });
+              .then(async (savedUser) => {
+                const populated = await savedUser.populate(["station"]);
+                const token = jwt.sign(
+                  { user: populated },
+                  process.env.token_key
+                );
+
+                response.send({
+                  station: savedStation,
+                  user: populated,
+                  token,
+                });
               })
               .catch((error) => {
                 response.status(500).send(error);
