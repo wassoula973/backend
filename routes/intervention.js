@@ -5,6 +5,7 @@ const multer = require("multer");
 const nodemailer = require("nodemailer");
 const User = require("../models/user");
 const Station = require("../models/station");
+const jwt = require("jsonwebtoken");
 
 const transport = nodemailer.createTransport({
   service: "gmail",
@@ -91,22 +92,39 @@ interventionRouter.post(
       .then(async (savedIntervention) => {
         const g = await User.findById(gerant);
         const s = await Station.findById(station);
-        s.listmateriel = await s.listmateriel.filter((m) => {
+
+        const temp = s.listmateriel.map((m) => {
           return m.id == material ? { ...m, etat: "en panne" } : m;
         });
-        console.log(s);
 
-        // const contenu = {
-        //   from: process.env.nodemailer_email,
-        //   to: g.email,
-        //   subject: "Ticket Id",
-        //   html: "Ticket id : " + savedIntervention._id,
-        // };
-        // transport.sendMail(contenu, (error, mail) => {
-        //   console.log({ error, mail });
-        // });
+        s.listmateriel = temp;
 
-        response.send(savedIntervention);
+        s.save()
+          .then(async () => {
+            const contenu = {
+              from: process.env.nodemailer_email,
+              to: g.email,
+              subject: "Ticket Id",
+              html: "Ticket id : " + savedIntervention._id,
+            };
+            // transport.sendMail(contenu, (error, mail) => {
+            //   console.log({ error, mail });
+            // });
+
+            const userPopulated = await g.populate("station");
+            const token = jwt.sign(
+              { user: userPopulated },
+              process.env.token_key
+            );
+            response.send({
+              intervention: savedIntervention,
+              user: userPopulated,
+              token,
+            });
+          })
+          .catch((error) => {
+            response.status(500).send(error);
+          });
       })
       .catch((error) => {
         response.status(500).send(error);
