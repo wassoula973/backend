@@ -4,6 +4,7 @@ const { isConnected } = require("../middlewares");
 const multer = require("multer");
 const nodemailer = require("nodemailer");
 const User = require("../models/user");
+const Station = require("../models/station");
 
 const transport = nodemailer.createTransport({
   service: "gmail",
@@ -74,7 +75,8 @@ interventionRouter.post(
   "/",
   [isConnected, upload.single("image")],
   (request, response) => {
-    const { gerant, station, error, intensity, category } = request.body;
+    const { gerant, station, error, intensity, category, material } =
+      request.body;
     const imageName = request.file ? request.file.filename : "";
     const intervention = new Intervention({
       gerant,
@@ -88,16 +90,22 @@ interventionRouter.post(
       .save()
       .then(async (savedIntervention) => {
         const g = await User.findById(gerant);
-
-        const contenu = {
-          from: process.env.nodemailer_email,
-          to: g.email,
-          subject: "Ticket Id",
-          html: "Ticket id : " + savedIntervention._id,
-        };
-        transport.sendMail(contenu, (error, mail) => {
-          console.log({ error, mail });
+        const s = await Station.findById(station);
+        s.listmateriel = await s.listmateriel.filter((m) => {
+          return m.id == material ? { ...m, etat: "en panne" } : m;
         });
+        console.log(s);
+
+        // const contenu = {
+        //   from: process.env.nodemailer_email,
+        //   to: g.email,
+        //   subject: "Ticket Id",
+        //   html: "Ticket id : " + savedIntervention._id,
+        // };
+        // transport.sendMail(contenu, (error, mail) => {
+        //   console.log({ error, mail });
+        // });
+
         response.send(savedIntervention);
       })
       .catch((error) => {
