@@ -56,6 +56,17 @@ interventionRouter.get(
 );
 
 interventionRouter.get(
+  "/technicien/:id",
+  [isConnected],
+  async (request, response) => {
+    const interventions = await Intervention.find({
+      technicien: request.params.id,
+    }).populate(["gerant", "station", "technicien"]);
+    response.send(interventions);
+  }
+);
+
+interventionRouter.get(
   "/assistant/:id",
   [isConnected],
   async (request, response) => {
@@ -90,6 +101,7 @@ interventionRouter.post(
     intervention
       .save()
       .then(async (savedIntervention) => {
+        log;
         const g = await User.findById(gerant);
         const s = await Station.findById(station);
 
