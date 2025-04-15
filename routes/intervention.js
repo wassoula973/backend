@@ -101,7 +101,6 @@ interventionRouter.post(
     intervention
       .save()
       .then(async (savedIntervention) => {
-        log;
         const g = await User.findById(gerant);
         const s = await Station.findById(station);
 
