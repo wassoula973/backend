@@ -28,11 +28,12 @@ stationRouter.post("/getbyassistant", [], async (request, response) => {
 });
 
 stationRouter.post("/", [isConnected], (request, response) => {
-  const { adresse, listmateriel, gerant } = request.body;
+  const { adresse, listmateriel, gerant, gouvernorat } = request.body;
   const station = new Station({
     gerant,
     adresse,
     listmateriel,
+    gouvernorat,
   });
   station
     .save()
@@ -48,7 +49,7 @@ stationRouter.post("/", [isConnected], (request, response) => {
           .catch((error) => {
             response.status(500).send(error);
           });
-      }
+      } else response.send(savedStation);
     })
     .catch((error) => {
       response.status(500).send(error);
