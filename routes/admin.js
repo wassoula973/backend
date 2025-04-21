@@ -17,7 +17,7 @@ adminRouter.get("/users/gerants", [isConnected], async (request, response) => {
 });
 
 adminRouter.get("/user/:id", [isConnected], async (request, response) => {
-  const user = await User.findById(request.params.id);
+  const user = await User.findById(request.params.id).populate(["station"]);
 
   if (user) {
     response.send(user);
