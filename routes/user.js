@@ -77,9 +77,7 @@ userRouter.post("/", [isConnected], (request, response) => {
           " <br/>password : " +
           password,
       };
-      transport.sendMail(contenu, (error, mail) => {
-        console.log(error);
-      });
+      transport.sendMail(contenu, (error, mail) => {});
       response.send(savedUser);
     })
     .catch((error) => {

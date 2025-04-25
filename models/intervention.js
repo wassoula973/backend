@@ -11,17 +11,7 @@ const interventionSchema = new Schema({
   },
   category: {
     type: String,
-    enum: [
-      "dga",
-      "comptabilité",
-      "commerciale gaz",
-      "exploitation",
-      "financiere",
-      "maitenance",
-      "marketing",
-      "securite",
-      "commerciale des reseaux",
-    ],
+    enum: ["fuite_citerne", "piste", "extincteur", "lavage", "retard"],
   },
   date: { type: Date, default: Date.now() },
   gerant: { type: Types.ObjectId, ref: User },
