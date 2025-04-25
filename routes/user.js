@@ -4,8 +4,17 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const { isConnected } = require("../middlewares");
 const Station = require("../models/station");
+const nodemailer = require("nodemailer");
 
 const userRouter = Router();
+
+const transport = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "younssiwissal3@gmail.com",
+    pass: "kiapzllzosqjpvxe",
+  },
+});
 
 userRouter.get("/", [isConnected], async (request, response) => {
   const users = await User.find({ deleted: false }).populate("station");
@@ -42,7 +51,7 @@ userRouter.post("/login", async (request, response) => {
 });
 
 //register
-userRouter.post("/", (request, response) => {
+userRouter.post("/", [isConnected], (request, response) => {
   const { firstname, lastname, cin, email, password, role, phone } =
     request.body;
   const hash = bcrypt.hashSync(password, 10);
@@ -57,10 +66,21 @@ userRouter.post("/", (request, response) => {
   });
   user
     .save()
-    .then(async (savedUser) => {
-      const userPopulated = await user.populate("station");
-      const token = jwt.sign({ user: userPopulated }, process.env.token_key);
-      response.send({ user: userPopulated, token });
+    .then((savedUser) => {
+      const contenu = {
+        from: process.env.nodemailer_email,
+        to: email,
+        subject: "Account created",
+        html:
+          "Your account was created by the admin of Agil and there are your credentials : <br/>* email : " +
+          email +
+          " <br/>password : " +
+          password,
+      };
+      transport.sendMail(contenu, (error, mail) => {
+        console.log(error);
+      });
+      response.send(savedUser);
     })
     .catch((error) => {
       response.status(500).send(error);

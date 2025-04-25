@@ -118,9 +118,9 @@ interventionRouter.post(
               subject: "Ticket Id",
               html: "Ticket id : " + savedIntervention._id,
             };
-            // transport.sendMail(contenu, (error, mail) => {
-            //   console.log({ error, mail });
-            // });
+            transport.sendMail(contenu, (error, mail) => {
+              console.log({ error, mail });
+            });
 
             const userPopulated = await g.populate("station");
             const token = jwt.sign(
