@@ -89,7 +89,10 @@ interventionRouter.post(
   (request, response) => {
     const { gerant, station, error, intensity, category, material } =
       request.body;
+    console.log({ gerant, station, error, intensity, category, material });
     const imageName = request.file ? request.file.filename : "";
+    console.log(imageName);
+
     const intervention = new Intervention({
       gerant,
       station,
@@ -134,7 +137,7 @@ interventionRouter.post(
             });
           })
           .catch((error) => {
-            response.status(500).send(error);
+            response.status(502).send(error);
           });
       })
       .catch((error) => {
