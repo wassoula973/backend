@@ -89,7 +89,7 @@ interventionRouter.post(
   (request, response) => {
     const { gerant, station, error, intensity, category, material } =
       request.body;
-    console.log({ gerant, station, error, intensity, category, material });
+
     const imageName = request.file ? request.file.filename : "";
     console.log(imageName);
 
