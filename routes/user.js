@@ -7,27 +7,28 @@ const Station = require("../models/station");
 const nodemailer = require("nodemailer");
 
 const userRouter = Router();
-
+// Configuration du transporteur nodemailer pour l'envoi d'emails via Gmail
 const transport = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: "younssiwissal3@gmail.com",
-    pass: "kiapzllzosqjpvxe",
+    pass: "kiapzllzosqjpvxe", // Mot de passe d'application Gmail
   },
 });
-
+//Récupère tous les utilisateurs non supprimés
 userRouter.get("/", [isConnected], async (request, response) => {
+  // Recherche tous les utilisateurs non supprimés et peuple les infos de leur station
   const users = await User.find({ deleted: false }).populate("station");
   response.send(users);
 });
-
+//Récupère un utilisateur spécifique par son ID
 userRouter.get("/:id", [isConnected], async (request, response) => {
   const user = await User.findById(request.params.id).populate("station");
   if (user) {
     response.send(user);
   } else response.status(404).send("not found");
 });
-
+//Récupère les utilisateurs par rôle
 userRouter.get("/role/:role", [isConnected], async (request, response) => {
   const users = await User.find({ role: request.params.role });
   response.send(users);
@@ -38,10 +39,12 @@ userRouter.post("/login", async (request, response) => {
   const { email, password } = request.body;
   const user = await User.findOne({ email });
   if (user) {
+    // Vérification du mot de passe haché
     if (bcrypt.compareSync(password, user.password)) {
       if (user.deleted) {
         response.status(406).send("user deleted");
       } else {
+        // Génération du token JWT après connexion réussie
         const userPopulated = await user.populate("station");
         const token = jwt.sign({ user: userPopulated }, process.env.token_key);
         response.send({ user: userPopulated, token });
@@ -54,7 +57,9 @@ userRouter.post("/login", async (request, response) => {
 userRouter.post("/", [isConnected], (request, response) => {
   const { firstname, lastname, cin, email, password, role, phone } =
     request.body;
+  // Hachage du mot de passe avec bcrypt
   const hash = bcrypt.hashSync(password, 10);
+  // Création d'un nouvel utilisateur
   const user = new User({
     firstname,
     lastname,
@@ -100,10 +105,12 @@ userRouter.put("/", [isConnected], async (request, response) => {
     listeQueries,
     station,
   } = request.body;
-
+  // Hachage du nouveau mot de passe si fourni
   const hash = password ? bcrypt.hashSync(password, 10) : "";
+  // Recherche de l'utilisateur à mettre à jour
   const user = await User.findById(id);
   if (user) {
+    // Mise à jour des champs
     user.firstname = firstname ? firstname : user.firstname;
     user.lastname = lastname ? lastname : user.lastname;
     user.cin = cin ? cin : user.cin;
@@ -111,6 +118,7 @@ userRouter.put("/", [isConnected], async (request, response) => {
     user.password = password ? hash : user.password;
     user.phone = phone ? phone : user.phone;
     user.role = role ? role : user.role;
+    // Mise à jour conditionnelle des champs spécifiques au rôle
     user.gouvernorats =
       role == "assistant" || user.role == "assistant"
         ? gouvernorats
